@@ -18,8 +18,8 @@ public class Client extends Activity {
 
     private Socket socket;
 
-    private static final int SERVERPORT = 8080;
-    private static final String SERVER_IP = "23.16.22.78";
+    private static final int SERVERPORT = 8888;
+    private static final String SERVER_IP = "192.168.1.89";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -31,16 +31,16 @@ public class Client extends Activity {
 
     public void sendMessage(View view)
     {
+
         try {
             EditText et = (EditText) findViewById(R.id.editText);
             String str = et.getText().toString();
-            Toast.makeText(Client.this, "Sent: " + str,
-                    Toast.LENGTH_LONG).show();
-
 
             PrintWriter out = new PrintWriter(new BufferedWriter(
                     new OutputStreamWriter(socket.getOutputStream())),
                     true);
+            Toast.makeText(Client.this, "Sent: " + str,
+                    Toast.LENGTH_LONG).show();
             out.println(str);
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -62,7 +62,7 @@ public class Client extends Activity {
             try {
                 InetAddress serverAddr = InetAddress.getByName(SERVER_IP);
 
-                socket = new Socket(serverAddr, SERVERPORT);
+                socket = new Socket("192.168.1.89", 8080);
 
             } catch (UnknownHostException e1) {
                 e1.printStackTrace();
