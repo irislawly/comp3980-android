@@ -2,10 +2,14 @@ package com.bcit.game;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -16,68 +20,75 @@ import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import static com.bcit.game.shared.*;
+
 public class MainActivity extends Activity {
+
 
     private Socket socket;
 
     private static final int SERVER_PORT = 8080;
     private static final String SERVER_IP = "192.168.1.89";
-    int choice;
+    int count = 0, game_id, bytes_sent;
+    boolean connected = false, close_conn = false;
+    byte[] uid = new byte[4];
+    char playBoard[] = new char[9];
+    char this_player, other_player;
+    byte confirm_req[] = new byte[9];
+    byte req[] = new byte[8];
+    byte choice[] = new byte[2];
+    byte[] res = new byte[8];
+    //private Button button = (Button) findViewById(R.id.btn_send);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_client);
+        setContentView(R.layout.activity_main);
+        for (int i = 0; i < 9; i++)
+            playBoard[i] = '_';
         new Thread(new ClientThread()).start();
-        Log.w("Debug", "Welcome to TTT!");
-        new Thread(new RcvThread()).start();
-
-
-
 
     }
 
-    public void sendMessage(View view)
-    {
 
-        try {
-            //reading?
-            /*
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            final String st = input.readLine();
-            Toast.makeText(MainActivity.this, "Reading: " + st, Toast.LENGTH_LONG).show();
 
-             */
-            //      InputStream stream = socket.getInputStream();
-            // byte[] data = new byte[4];
+    void update_board(int cell, char board[], char player) {
+        Log.w("Debug", "making board");
+        if (board[cell] == ' ') {
+            board[cell] = player;
+            String r1 = "", r2 = "", r3 = "";
+            r1 += board[0] + " " + board[1] + " " + board[2];
+            r2 += board[3] + " " + board[4] + " " + board[5];
+            r3 += board[6] + " " + board[7] + " " + board[8];
+            Toast.makeText(MainActivity.this, "Sent: " + r1+ "\n" + r2+ "\n" + r3, Toast.LENGTH_LONG).show();
+      //      Log.w("Debug", r1);
+      //      Log.w("Debug", r2);
+        //    Log.w("Debug", r3);
 
-            // int count = stream.read(data);
-            //   Toast.makeText(MainActivity.this, "Num: " + count, Toast.LENGTH_LONG).show();
-            //send input text to server
-            EditText et = (EditText) findViewById(R.id.editText);
-            String str = et.getText().toString();
-
-            PrintWriter out = new PrintWriter(new BufferedWriter(
-                    new OutputStreamWriter(socket.getOutputStream())),
-                    true);
-            Toast.makeText(MainActivity.this, "Sent: " + str, Toast.LENGTH_LONG).show();
-           Payload payload;
-      //      byte[] data = createBytes(payload);
-     //       gattCharacteristic.setValue(data);
-            out.println(str);
-            out.flush();
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
+
+    public int getValue() {
+        Button button = (Button) findViewById(R.id.btn_send);
+
+        boolean done = false;
+        while (!done) {
+            if(button.isSelected()){
+                done = true;
+            }
+
+        }
+        EditText et = (EditText) findViewById(R.id.edt_send_message);
+        String str = et.getText().toString();
+        return Integer.parseInt(str);
+    }
+
+
 
 
     class ClientThread implements Runnable {
@@ -87,7 +98,7 @@ public class MainActivity extends Activity {
 
             try {
                 socket = new Socket(SERVER_IP, SERVER_PORT);
-                Log.w("Debug", "anything here?");
+               // Log.w("Debug", "anything here?");
 
             } catch (UnknownHostException e1) {
                 e1.printStackTrace();
@@ -95,87 +106,151 @@ public class MainActivity extends Activity {
                 e1.printStackTrace();
             }
             Log.w("Debug", "Welcome to TTT!");
+          //  while (!close_conn) {
+                for (int i = 0; i < req.length; i++) {
+                    req[i] = 0;
+                }
+                for (int i = 0; i < res.length; i++) {
+                    res[i] = 0;
+                }
 
-
-
-
-        }
-    }
-    public class RcvThread implements Runnable { // recieve
-        public void run() {
-            while (true) {//connected
-                try {
-                    /*
-                    DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-                    byte[] imBytes = new byte[31000];
-                    int numRead = 0;
-                    while ((numRead = inputStream.read(imBytes)) >= 0) {
-                        baos.write(imBytes,0,numRead);
+                if (!connected) {
+                    for (int i = 0; i < confirm_req.length; i++) {
+                        confirm_req[i] = 0;
                     }
-                    byte[] imageInBytes = baos.toByteArray();
 
-                    int k = imageInBytes.length;
-                    Message msg = new Message();
-                    Log.w("Debug", String.valueOf(msg));
-                    msg.obj = k;
-                   // mHandler.sendMessage(msg);
+                    //  byte TIC_TAC_TOE = 1;
+                    confirm_req[REQ_TYPE] = 1;
+                    confirm_req[REQ_CONTEXT] = 1;
+                    confirm_req[REQ_PAYLOAD_LEN] = 2;
+                    confirm_req[REQ_PAYLOAD] = 1;   // Version number
+                    byte b = (byte) getValue();
+                    Toast.makeText(MainActivity.this, "Sent: " + b, Toast.LENGTH_LONG).show();
+       //                Log.w("Debug", "Gameid: " + String.valueOf(b));
+                    confirm_req[REQ_PAYLOAD + 1] = 1;//(byte) getValue();
+                    game_id = TIC_TAC_TOE;
+                    for (int i = 0; i < confirm_req.length; i++) {
+                        //   Log.w("Debug", String.valueOf(confirm_req[i]));
+                    }
 
-
-                    Log.w("Debug", "anything here?");
-                    BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    String st = input.readLine();
-                    Log.w("Debug", st);
-                    Toast.makeText(MainActivity.this, "Reading: " + st, Toast.LENGTH_LONG).show();
-
-                     */
-
+                    OutputStream socketOutputStream = null;
                     try {
-                        BufferedReader input  = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                        String st = input.readLine();
-                        Log.w("Debug", st);
+                        socketOutputStream = socket.getOutputStream();
+                        socketOutputStream.write(confirm_req);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    //try to recieve the RES uid shiet
+                    try {
+                        InputStream stream = socket.getInputStream();
+
+                        stream.read(res);
+                        String rez = "";
+                        String uID = "";
+                        for (int i = 0; i < res.length; i++) {
+                            rez += String.valueOf(res[i]);
+                        }
+                        for (int i = 3; i < 7; i++) {
+                            uID += String.valueOf(res[i]);
+                        }
+                   //     Log.w("Debug", "Ur res: " + rez);
+                   //     Log.w("Debug", "Ur uid: " + uID);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                } catch (Exception e) {
-                    Log.e("SocketConnectionv02Activity", "C: ErrorRCVD", e);
+
+                    connected = true;
+
+                } else {
+                    //try to recieve moes i guess
+                    choice[0] = 0;
+                    choice[1] = 0;
+                    try {
+                        InputStream stream = socket.getInputStream();
+
+                        stream.read(res);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.w("Debug", "MsgType? " + String.valueOf(res[0]));
+                    switch (res[MSG_TYPE]) {
+
+                        case SUCCESS:
+                            if (CONFIRMATION == 1) {
+                                for (int i = 3; i < 7; i++) {
+                                    uid[i - 3] = res[i];
+                                }
+                            }
+                            break;
+                        case UPDATE:
+                            Log.w("Debug", "Context? " + String.valueOf(res[CONTEXT]));
+
+                            switch (res[CONTEXT]) {
+                                case START_GAME:
+                                    Log.w("Debug", "GameID: " + game_id);
+                                    if (game_id == TIC_TAC_TOE) {
+                                        for (int i = 0; i < 4; i++)
+                                            req[i] = uid[i];
+                                        req[REQ_TYPE] = GAME_ACTION;        // Game action
+                                        req[REQ_CONTEXT] = MAKE_MOVE;       // Make a move
+                                        req[REQ_PAYLOAD_LEN] = 1;
+
+                                        Log.w("Debug", "Your turn, place your move: ");
+                                        //cin >> choice;
+                                        choice[0] = 1;
+                                        Log.w("Debug", "Choice:" + String.valueOf(choice[0]));
+                                        // cout << "sent " << choice[0] << " to server!" << endl;
+
+                                      //  choice[0] -= '0';
+                                        req[REQ_PAYLOAD] = choice[0];
+                                        Log.w("Debug", "Payload: " + String.valueOf(req[REQ_PAYLOAD]));
+                                        Toast.makeText(MainActivity.this, "Updatboard!", Toast.LENGTH_LONG).show();
+                                        update_board(req[REQ_PAYLOAD], playBoard, (count % 2 == 0 ? 'X' : 'O'));
+                                        OutputStream socketOutputStream = null;
+                                        try {
+                                            socketOutputStream = socket.getOutputStream();
+                                            socketOutputStream.write(confirm_req);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+
+                                        }
+                                        // bytes_sent = send(sockfd, req, sizeof(req), 0);
+                                        Log.w("Debug", "Updateboard: " + req[REQ_PAYLOAD]);
 
 
-                   }
+                                        if (bytes_sent == -1) {
+
+                                            return;
+                                        }
+                                        count++; // TO KEEP TRACK OF 'X' & 'O'
+                                        this_player = 'X';
+                                        other_player = 'O';
+                                    }
+                                    if (res[PAYLOAD] == O) {
+                                        System.out.println("Please wait for your turn\n");
+                                        count--;
+                                        this_player = 'O';
+                                        other_player = 'X';
+                                    }
+
+
+                                default:
+                                    Log.w("Debug", "Context? " + "default");
+                                    break;
+                            }
+
+                    }
+
+
                 }
-            }
+          //  }
 
-    }
-    class Payload {
-        int time1;
-        int time2;
-        int time3;
-        int time4;
-        int time5;
-        int time6;
-        byte speed1;
-        byte speed2;
-        byte speed3;
 
-    }
-    void createBytes(Payload payload) {
-        /*
-        ByteByffer buffer = ByteBuffer.allocate(28).order(ByteOrder.LITTLE_ENDIAN);
+        }
 
-        buffer.putInt(payload.time1);
-        buffer.putInt(payload.time2);
-        buffer.putInt(payload.time3);
-        buffer.putInt(payload.time4);
-        buffer.putInt(payload.time5);
-        buffer.putInt(payload.time6);
-        buffer.putByte(payload.speed1);
-        buffer.putByte(payload.speed2);
-        buffer.putByte(payload.speed3);
-        buffer.putByte(0);
-        return buffer.array();
 
-         */
     }
 }

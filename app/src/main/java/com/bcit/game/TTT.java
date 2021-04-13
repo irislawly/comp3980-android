@@ -55,9 +55,24 @@ public class TTT extends Activity {
             e.printStackTrace();
         }
     }
-    public void onClick(View view) {
-
+/*
+    public void clickb1(View view){
+        Toast.makeText(MainActivity.this, "Pressed 1", Toast.LENGTH_SHORT).show();
     }
+    public void clickb2(View view){
+        Toast.makeText(MainActivity.this, "Pressed 2", Toast.LENGTH_SHORT).show();
+    }
+    public void clickb3(View view){
+        Toast.makeText(MainActivity.this, "Pressed 3", Toast.LENGTH_SHORT).show();
+    }
+    public void clickb4(View view){
+        Toast.makeText(MainActivity.this, "Pressed 4", Toast.LENGTH_SHORT).show();
+    }
+    public void clickb5(View view){
+        Toast.makeText(MainActivity.this, "Pressed 5", Toast.LENGTH_SHORT).show();
+    }
+
+ */
 
     class ClientThread implements Runnable {
 
