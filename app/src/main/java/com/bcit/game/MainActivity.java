@@ -26,7 +26,8 @@ import android.widget.Toast;
 
 import static com.bcit.game.shared.*;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener  {
+
 
 
     private Socket socket;
@@ -51,8 +52,37 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         for (int i = 0; i < 9; i++)
             playBoard[i] = '_';
-        new Thread(new ClientThread()).start();
+     //   new Thread(new ClientThread()).start();
 
+        Button button_rock = findViewById(R.id.button_rock);
+        Button button_paper = findViewById(R.id.button_paper);
+        Button button_scissor = findViewById(R.id.button_scissor);
+
+        button_rock.setOnClickListener( this);
+        button_paper.setOnClickListener( this);
+        button_scissor.setOnClickListener(this);
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        int choice = 0;
+        switch (v.getId()){
+
+            case R.id.button_rock:
+                choice = ROCK;
+                break;
+
+            case R.id.button_paper:
+                choice = PAPER;
+                break;
+
+            case R.id.button_scissor:
+                choice = SCISSORS;
+                break;
+        }
+
+        Toast.makeText(MainActivity.this, "Picked: " + choice, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -73,8 +103,9 @@ public class MainActivity extends Activity {
         }
     }
 
+    /*
     public int getValue() {
-        Button button = (Button) findViewById(R.id.btn_send);
+        Button button
 
         boolean done = false;
         while (!done) {
@@ -88,7 +119,7 @@ public class MainActivity extends Activity {
         return Integer.parseInt(str);
     }
 
-
+*/
 
 
     class ClientThread implements Runnable {
@@ -124,8 +155,8 @@ public class MainActivity extends Activity {
                     confirm_req[REQ_CONTEXT] = 1;
                     confirm_req[REQ_PAYLOAD_LEN] = 2;
                     confirm_req[REQ_PAYLOAD] = 1;   // Version number
-                    byte b = (byte) getValue();
-                    Toast.makeText(MainActivity.this, "Sent: " + b, Toast.LENGTH_LONG).show();
+                 //   byte b = (byte) getValue();
+                 //   Toast.makeText(MainActivity.this, "Sent: " + b, Toast.LENGTH_LONG).show();
        //                Log.w("Debug", "Gameid: " + String.valueOf(b));
                     confirm_req[REQ_PAYLOAD + 1] = 1;//(byte) getValue();
                     game_id = TIC_TAC_TOE;
