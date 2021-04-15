@@ -73,7 +73,7 @@ static final int SUCCESS=10;
     static final int INVALID_UID=31;
     static final int INVALID_TYPE=32;
     static final int INVALID_CONTEXT=33;
-    static final int  INVALID_PAYLOAD=34;
+    static final int INVALID_PAYLOAD=34;
 
 
 /** Server error */

@@ -35,7 +35,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Socket socket;
 
     private static final int SERVER_PORT = 8080;
-    private static final String SERVER_IP = "192.168.1.89";
+    private static final String SERVER_IP = "23.16.22.78";
     int count = 0, game_id, bytes_sent;
     boolean connected = false, close_conn = false;
     byte[] uid = new byte[4];
@@ -47,6 +47,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     byte[] res = new byte[8];
     boolean accepted = false;
     //private Button button = (Button) findViewById(R.id.btn_send);
+    Thread clientThread;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,7 +81,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 choice = SCISSORS;
                 break;
         }
-        new Thread(new ClientThread(choice)).start();
+        clientThread = new Thread(new ClientThread(choice));
+        clientThread.start();
         Toast.makeText(MainActivity.this, "Picked: " + choice, Toast.LENGTH_SHORT).show();
     }
 
@@ -258,6 +260,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                     t.setText("You tie!");
                                                 }
                                             });
+                                            break;
+                                        case OPPONENT_DISCONNECTED:
+                                            clientThread.stop();
                                             break;
                                         default:
                                             break;
