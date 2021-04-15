@@ -17,18 +17,20 @@ import java.net.UnknownHostException;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bcit.game.R;
 
 import static com.bcit.game.shared.*;
 
-public class MainActivity extends Activity implements View.OnClickListener  {
-
-
+public class MainActivity extends Activity implements View.OnClickListener {
 
     private Socket socket;
 
@@ -43,6 +45,7 @@ public class MainActivity extends Activity implements View.OnClickListener  {
     byte req[] = new byte[8];
     byte choice[] = new byte[2];
     byte[] res = new byte[8];
+    boolean accepted = false;
     //private Button button = (Button) findViewById(R.id.btn_send);
 
     @Override
@@ -50,27 +53,27 @@ public class MainActivity extends Activity implements View.OnClickListener  {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        for (int i = 0; i < 9; i++)
-            playBoard[i] = '_';
-     //   new Thread(new ClientThread()).start();
-
         Button button_rock = findViewById(R.id.button_rock);
         Button button_paper = findViewById(R.id.button_paper);
         Button button_scissor = findViewById(R.id.button_scissor);
 
-        button_rock.setOnClickListener( this);
-        button_paper.setOnClickListener( this);
+        button_rock.setOnClickListener(this);
+        button_paper.setOnClickListener(this);
         button_scissor.setOnClickListener(this);
+
+
+
 
     }
 
-    @Override
+
     public void onClick(View v) {
         int choice = 0;
-        switch (v.getId()){
+        switch (v.getId()) {
 
             case R.id.button_rock:
                 choice = ROCK;
+
                 break;
 
             case R.id.button_paper:
@@ -81,63 +84,29 @@ public class MainActivity extends Activity implements View.OnClickListener  {
                 choice = SCISSORS;
                 break;
         }
-
+        new Thread(new ClientThread(choice)).start();
         Toast.makeText(MainActivity.this, "Picked: " + choice, Toast.LENGTH_SHORT).show();
     }
 
 
-
-    void update_board(int cell, char board[], char player) {
-        Log.w("Debug", "making board");
-        if (board[cell] == ' ') {
-            board[cell] = player;
-            String r1 = "", r2 = "", r3 = "";
-            r1 += board[0] + " " + board[1] + " " + board[2];
-            r2 += board[3] + " " + board[4] + " " + board[5];
-            r3 += board[6] + " " + board[7] + " " + board[8];
-            Toast.makeText(MainActivity.this, "Sent: " + r1+ "\n" + r2+ "\n" + r3, Toast.LENGTH_LONG).show();
-      //      Log.w("Debug", r1);
-      //      Log.w("Debug", r2);
-        //    Log.w("Debug", r3);
-
-        }
-    }
-
-    /*
-    public int getValue() {
-        Button button
-
-        boolean done = false;
-        while (!done) {
-            if(button.isSelected()){
-                done = true;
-            }
-
-        }
-        EditText et = (EditText) findViewById(R.id.edt_send_message);
-        String str = et.getText().toString();
-        return Integer.parseInt(str);
-    }
-
-*/
-
-
     class ClientThread implements Runnable {
-
+        int val;
+        public ClientThread(int choice) {
+            int val = choice;
+        }
+        final Handler handler = new Handler();
         @Override
         public void run() {
-
             try {
                 socket = new Socket(SERVER_IP, SERVER_PORT);
-               // Log.w("Debug", "anything here?");
 
             } catch (UnknownHostException e1) {
                 e1.printStackTrace();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-            Log.w("Debug", "Welcome to TTT!");
-          //  while (!close_conn) {
+
+            while (true) {
                 for (int i = 0; i < req.length; i++) {
                     req[i] = 0;
                 }
@@ -150,20 +119,17 @@ public class MainActivity extends Activity implements View.OnClickListener  {
                         confirm_req[i] = 0;
                     }
 
-                    //  byte TIC_TAC_TOE = 1;
-                    confirm_req[REQ_TYPE] = 1;
-                    confirm_req[REQ_CONTEXT] = 1;
+                    confirm_req[REQ_TYPE] = CONFIRMATION;
+                    confirm_req[REQ_CONTEXT] = CONFIRM_RULESET;
                     confirm_req[REQ_PAYLOAD_LEN] = 2;
                     confirm_req[REQ_PAYLOAD] = 1;   // Version number
-                 //   byte b = (byte) getValue();
-                 //   Toast.makeText(MainActivity.this, "Sent: " + b, Toast.LENGTH_LONG).show();
-       //                Log.w("Debug", "Gameid: " + String.valueOf(b));
-                    confirm_req[REQ_PAYLOAD + 1] = 1;//(byte) getValue();
-                    game_id = TIC_TAC_TOE;
+                    confirm_req[REQ_PAYLOAD + 1] = ROCK_PAPER_SCISSOR;
+                    game_id = ROCK_PAPER_SCISSOR;
+                    String c_req  ="";
                     for (int i = 0; i < confirm_req.length; i++) {
-                        //   Log.w("Debug", String.valueOf(confirm_req[i]));
+                        c_req += String.valueOf(confirm_req[i]);
                     }
-
+                    Log.w("Debug", "Creq: " +c_req);
                     OutputStream socketOutputStream = null;
                     try {
                         socketOutputStream = socket.getOutputStream();
@@ -184,8 +150,8 @@ public class MainActivity extends Activity implements View.OnClickListener  {
                         for (int i = 3; i < 7; i++) {
                             uID += String.valueOf(res[i]);
                         }
-                   //     Log.w("Debug", "Ur res: " + rez);
-                   //     Log.w("Debug", "Ur uid: " + uID);
+                        Log.w("Debug", "Ur res: " + rez);
+                        Log.w("Debug", "Ur uid: " + uID);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -194,94 +160,113 @@ public class MainActivity extends Activity implements View.OnClickListener  {
                     connected = true;
 
                 } else {
-                    //try to recieve moes i guess
-                    choice[0] = 0;
-                    choice[1] = 0;
                     try {
                         InputStream stream = socket.getInputStream();
 
                         stream.read(res);
-
+                        String rez = "";
+                        String uID = "";
+                        for (int i = 0; i < res.length; i++) {
+                            rez += String.valueOf(res[i]);
+                        }
+                        for (int i = 3; i < 7; i++) {
+                            uID += String.valueOf(res[i]);
+                        }
+                        Log.w("Debug", "Ur res: " + rez);
+                        Log.w("Debug", "Ur uid: " + uID);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    choice[0] = 0;
+                    choice[1] = 0;
 
-                    Log.w("Debug", "MsgType? " + String.valueOf(res[0]));
-                    switch (res[MSG_TYPE]) {
-
+                    switch(res[MSG_TYPE]){
                         case SUCCESS:
-                            if (CONFIRMATION == 1) {
-                                for (int i = 3; i < 7; i++) {
-                                    uid[i - 3] = res[i];
+                            if(true){
+                                if(!accepted){
+                                    for(int i = 3; i< 7; i++)
+                                        uid[i-3] = res[i];
+                                    accepted = true;
+                                }else{
+                                    Log.w("Debug", "SUCESSMOVE!");
+                                    break;
                                 }
                             }
                             break;
                         case UPDATE:
-                            Log.w("Debug", "Context? " + String.valueOf(res[CONTEXT]));
-
-                            switch (res[CONTEXT]) {
+                            switch(res[CONTEXT]){
                                 case START_GAME:
-                                    Log.w("Debug", "GameID: " + game_id);
-                                    if (game_id == TIC_TAC_TOE) {
-                                        for (int i = 0; i < 4; i++)
-                                            req[i] = uid[i];
-                                        req[REQ_TYPE] = GAME_ACTION;        // Game action
-                                        req[REQ_CONTEXT] = MAKE_MOVE;       // Make a move
-                                        req[REQ_PAYLOAD_LEN] = 1;
-
-                                        Log.w("Debug", "Your turn, place your move: ");
-                                        //cin >> choice;
-                                        choice[0] = 1;
-                                        Log.w("Debug", "Choice:" + String.valueOf(choice[0]));
-                                        // cout << "sent " << choice[0] << " to server!" << endl;
-
-                                      //  choice[0] -= '0';
-                                        req[REQ_PAYLOAD] = choice[0];
-                                        Log.w("Debug", "Payload: " + String.valueOf(req[REQ_PAYLOAD]));
-                                        Toast.makeText(MainActivity.this, "Updatboard!", Toast.LENGTH_LONG).show();
-                                        update_board(req[REQ_PAYLOAD], playBoard, (count % 2 == 0 ? 'X' : 'O'));
-                                        OutputStream socketOutputStream = null;
-                                        try {
-                                            socketOutputStream = socket.getOutputStream();
-                                            socketOutputStream.write(confirm_req);
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-
-                                        }
-                                        // bytes_sent = send(sockfd, req, sizeof(req), 0);
-                                        Log.w("Debug", "Updateboard: " + req[REQ_PAYLOAD]);
-
-
-                                        if (bytes_sent == -1) {
-
-                                            return;
-                                        }
-                                        count++; // TO KEEP TRACK OF 'X' & 'O'
-                                        this_player = 'X';
-                                        other_player = 'O';
+                                    //RPS
+                                    for (int i = 0; i < 4; i++)
+                                        req[i] = uid[i];
+                                    req[REQ_TYPE] = GAME_ACTION;          // Game action
+                                    req[REQ_CONTEXT] = MAKE_MOVE;       // Make a move
+                                    req[REQ_PAYLOAD_LEN] = 1;
+                                    //     printf("Place your move: ");
+                                    //      cin >> choice;
+                                    //      cout << "sent " << choice[0] << " to server!" << endl;
+                                    choice[0] = (byte) val;
+                                    choice[0] -= '0';
+                                    req[REQ_PAYLOAD] = choice[0];
+                                    //send to server
+                                    OutputStream socketOutputStream = null;
+                                    try {
+                                        socketOutputStream = socket.getOutputStream();
+                                        socketOutputStream.write(req);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
                                     }
-                                    if (res[PAYLOAD] == O) {
-                                        System.out.println("Please wait for your turn\n");
-                                        count--;
-                                        this_player = 'O';
-                                        other_player = 'X';
-                                    }
-
-
-                                default:
-                                    Log.w("Debug", "Context? " + "default");
                                     break;
-                            }
+                                case END_GAME:
+                                    switch(PAYLOAD){
+                                        case WIN:
+                                            handler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
 
+                                                    TextView t = findViewById(R.id.textView3);
+                                                    t.setText("W");
+                                                }
+                                            });
+                                            break;
+                                        case LOSS:
+                                            count++;
+                                            choice[0] = res[PAYLOAD + 1];
+                                            handler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    TextView t = findViewById(R.id.textView3);
+                                                    t.setText("L");
+
+                                                }
+                                            });
+                                            break;
+                                        case TIE:
+                                            handler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    TextView t = findViewById(R.id.textView3);
+                                                    t.setText("Tie");
+
+                                                }
+                                            });
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                            }
                     }
 
 
-                }
-          //  }
 
+
+
+
+                }
+
+            }
 
         }
-
 
     }
 }
