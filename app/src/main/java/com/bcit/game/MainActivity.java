@@ -30,6 +30,15 @@ import com.bcit.game.R;
 
 import static com.bcit.game.shared.*;
 
+/**
+ * ! Note:
+ * 1.   Error checking on mobile client seems to un-needed since clients are provided
+ *      with exactly three choices (buttons) where it is impossible for clients to
+ *      enter a wrong value.
+ *
+ * 2.   Opponent disconnection protocol is also un-needed on the mobile clients since
+ *      the only way for them to connect to the server is to actually make a move.
+ */
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private Socket socket;
@@ -62,9 +71,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         button_rock.setOnClickListener(this);
         button_paper.setOnClickListener(this);
         button_scissor.setOnClickListener(this);
-
-        clientThread = new Thread(clientChoice);
-        clientThread.start();
     }
 
 
@@ -85,6 +91,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
         }
         clientChoice = new ClientThread(choice);
+        clientThread = new Thread(clientChoice);
+        clientThread.start();
         Toast.makeText(MainActivity.this, "Picked: " + choice, Toast.LENGTH_SHORT).show();
     }
 
@@ -238,7 +246,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                 public void run() {
 
                                                     TextView t = findViewById(R.id.textView3);
-                                                    t.setText("You win!");
+                                                    t.setText("You win!\nThank You for playing BIT Arcade's Rock Paper Scissors");
                                                 }
                                             });
                                             try {
@@ -255,7 +263,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                 @Override
                                                 public void run() {
                                                     TextView t = findViewById(R.id.textView3);
-                                                    t.setText("You lose!");
+                                                    t.setText("You lose!\nThank You for playing BIT Arcade's Rock Paper Scissors");
 
                                                 }
                                             });
@@ -271,7 +279,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                 @Override
                                                 public void run() {
                                                     TextView t = findViewById(R.id.textView3);
-                                                    t.setText("You tie!");
+                                                    t.setText("You tie!\nThank You for playing BIT Arcade's Rock Paper Scissors");
                                                 }
                                             });
                                             try {
