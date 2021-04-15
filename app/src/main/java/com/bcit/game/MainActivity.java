@@ -61,9 +61,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         button_paper.setOnClickListener(this);
         button_scissor.setOnClickListener(this);
 
-
-
-
     }
 
 
@@ -73,7 +70,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.button_rock:
                 choice = ROCK;
-
                 break;
 
             case R.id.button_paper:
@@ -92,7 +88,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     class ClientThread implements Runnable {
         int val;
         public ClientThread(int choice) {
-            int val = choice;
+            val = choice;
         }
         final Handler handler = new Handler();
         @Override
@@ -104,6 +100,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 e1.printStackTrace();
             } catch (IOException e1) {
                 e1.printStackTrace();
+            }
+            for (int i = 0; i < res.length; i++) {
+                res[i] = 0;
             }
 
             while (true) {
@@ -138,7 +137,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         e.printStackTrace();
                     }
                     //try to recieve the RES uid shiet
-                    try {
+              /*      try {
                         InputStream stream = socket.getInputStream();
 
                         stream.read(res);
@@ -151,41 +150,42 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             uID += String.valueOf(res[i]);
                         }
                         Log.w("Debug", "Ur res: " + rez);
-                        Log.w("Debug", "Ur uid: " + uID);
+                        Log.w("Debug", "Ur uid: " + uID);*
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }
+                    }*/
 
 
                     connected = true;
 
                 } else {
+                    Log.w("Debug", "Else!");
                     try {
                         InputStream stream = socket.getInputStream();
-
                         stream.read(res);
-                        String rez = "";
-                        String uID = "";
-                        for (int i = 0; i < res.length; i++) {
-                            rez += String.valueOf(res[i]);
-                        }
-                        for (int i = 3; i < 7; i++) {
-                            uID += String.valueOf(res[i]);
-                        }
-                        Log.w("Debug", "Ur res: " + rez);
-                        Log.w("Debug", "Ur uid: " + uID);
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    String rez = "";
+
+                    for (int i = 0; i < res.length; i++) {
+                        rez += String.valueOf(res[i]);
+                    }
+
+                    Log.w("Debug", "Else res: " + rez);
                     choice[0] = 0;
                     choice[1] = 0;
 
                     switch(res[MSG_TYPE]){
                         case SUCCESS:
-                            if(true){
+                            Log.w("Debug", "Sucess!");
+                            if(res[CONTEXT] == CONFIRMATION){ //CONFIRMATION
                                 if(!accepted){
-                                    for(int i = 3; i< 7; i++)
-                                        uid[i-3] = res[i];
+                                    for(int i = 3; i< 7; i++) {
+                                        uid[i - 3] = res[i];
+                                        Log.w("Debug", "Uid? " + uid[i-3]);
+                                    }
                                     accepted = true;
                                 }else{
                                     Log.w("Debug", "SUCESSMOVE!");
@@ -196,19 +196,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         case UPDATE:
                             switch(res[CONTEXT]){
                                 case START_GAME:
+                                    Log.w("Debug", "Start game!");
                                     //RPS
                                     for (int i = 0; i < 4; i++)
                                         req[i] = uid[i];
                                     req[REQ_TYPE] = GAME_ACTION;          // Game action
                                     req[REQ_CONTEXT] = MAKE_MOVE;       // Make a move
                                     req[REQ_PAYLOAD_LEN] = 1;
-                                    //     printf("Place your move: ");
-                                    //      cin >> choice;
-                                    //      cout << "sent " << choice[0] << " to server!" << endl;
+
                                     choice[0] = (byte) val;
-                                    choice[0] -= '0';
+                                    Log.w("Debug", "Val:" + val);
+                                //    choice[0] -= '0';
                                     req[REQ_PAYLOAD] = choice[0];
                                     //send to server
+                                    String rezz = "";
+
+                                    for (int i = 0; i < req.length; i++) {
+                                        rezz += String.valueOf(req[i]);
+                                    }
+
+                                    Log.w("Debug", "Ur req: " + rezz);
                                     OutputStream socketOutputStream = null;
                                     try {
                                         socketOutputStream = socket.getOutputStream();
@@ -218,14 +225,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                     }
                                     break;
                                 case END_GAME:
-                                    switch(PAYLOAD){
+                                    Log.w("Debug", "Endgame: ");
+                                    Log.w("Debug", "End res: " + rez);
+                                    switch (res[PAYLOAD]) {
                                         case WIN:
                                             handler.post(new Runnable() {
                                                 @Override
                                                 public void run() {
 
                                                     TextView t = findViewById(R.id.textView3);
-                                                    t.setText("W");
+                                                    t.setText("You win!");
                                                 }
                                             });
                                             break;
@@ -236,7 +245,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                 @Override
                                                 public void run() {
                                                     TextView t = findViewById(R.id.textView3);
-                                                    t.setText("L");
+                                                    t.setText("You lose!");
 
                                                 }
                                             });
@@ -246,8 +255,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                 @Override
                                                 public void run() {
                                                     TextView t = findViewById(R.id.textView3);
-                                                    t.setText("Tie");
-
+                                                    t.setText("You tie!");
                                                 }
                                             });
                                             break;
@@ -256,11 +264,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                     }
                             }
                     }
-
-
-
-
-
 
                 }
 
