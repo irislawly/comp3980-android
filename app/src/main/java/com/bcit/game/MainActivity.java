@@ -63,6 +63,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         button_paper.setOnClickListener(this);
         button_scissor.setOnClickListener(this);
 
+        clientThread = new Thread(clientChoice);
+        clientThread.start();
     }
 
 
@@ -83,7 +85,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
         }
         clientChoice = new ClientThread(choice);
-
         Toast.makeText(MainActivity.this, "Picked: " + choice, Toast.LENGTH_SHORT).show();
     }
 
@@ -96,9 +97,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         final Handler handler = new Handler();
         @Override
         public void run() {
-            clientThread = new Thread(clientChoice);
-            clientThread.start();
-
             try {
                 socket = new Socket(SERVER_IP, SERVER_PORT);
 
