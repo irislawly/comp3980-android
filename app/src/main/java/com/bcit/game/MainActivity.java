@@ -239,6 +239,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                     t.setText("You win!");
                                                 }
                                             });
+                                            try {
+                                                clientThread.sleep(5000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
                                             clientThread.stop();
                                             break;
                                         case LOSS:
@@ -252,6 +257,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                                                 }
                                             });
+                                            try {
+                                                clientThread.sleep(5000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
                                             clientThread.stop();
                                             break;
                                         case TIE:
@@ -262,6 +272,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                     t.setText("You tie!");
                                                 }
                                             });
+                                            try {
+                                                clientThread.sleep(5000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
                                             clientThread.stop();
                                             break;
                                         case OPPONENT_DISCONNECTED:
