@@ -239,6 +239,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                     t.setText("You win!");
                                                 }
                                             });
+                                            clientThread.stop();
                                             break;
                                         case LOSS:
                                             count++;
@@ -251,6 +252,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                                                 }
                                             });
+                                            clientThread.stop();
                                             break;
                                         case TIE:
                                             handler.post(new Runnable() {
@@ -260,6 +262,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                                     t.setText("You tie!");
                                                 }
                                             });
+                                            clientThread.stop();
                                             break;
                                         case OPPONENT_DISCONNECTED:
                                             clientThread.stop();
