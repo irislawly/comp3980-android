@@ -48,6 +48,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     boolean accepted = false;
     //private Button button = (Button) findViewById(R.id.btn_send);
     Thread clientThread;
+    ClientThread clientChoice;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,8 +82,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 choice = SCISSORS;
                 break;
         }
-        clientThread = new Thread(new ClientThread(choice));
-        clientThread.start();
+        clientChoice = new ClientThread(choice);
+
         Toast.makeText(MainActivity.this, "Picked: " + choice, Toast.LENGTH_SHORT).show();
     }
 
@@ -95,6 +96,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         final Handler handler = new Handler();
         @Override
         public void run() {
+            clientThread = new Thread(clientChoice);
+            clientThread.start();
+
             try {
                 socket = new Socket(SERVER_IP, SERVER_PORT);
 
@@ -280,12 +284,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                             clientThread.stop();
                                             break;
                                         case OPPONENT_DISCONNECTED:
+                                            handler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    TextView t = findViewById(R.id.textView3);
+                                                    t.setText("Your opponent has disconnected!\nThe game will end shortly");
+                                                }
+                                            });
+                                            try {
+                                                clientThread.sleep(5000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
                                             clientThread.stop();
                                             break;
                                         default:
                                             break;
                                     }
                             }
+                        case INVALID_ACTION:
+                            if (res[CONTEXT] == INVALID_ACTION) {
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        TextView t = findViewById(R.id.textView3);
+                                        t.setText("Invalid move! Choose again.");
+                                    }
+                                });
+                            }
+                            break;
+                        default:
+                            break;
                     }
 
                 }
