@@ -7,6 +7,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:background="@color/colorPrimary"
         android:text="Test voice"
         android:textSize="20sp"
         android:id="@+id/record"
@@ -16,6 +18,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:background="@color/colorPrimary"
         android:text="Stop"
         android:textSize="20sp"
         android:id="@+id/stop"
@@ -26,6 +30,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:background="@color/colorPrimary"
         android:text="Playback"
         android:textSize="20sp"
         android:id="@+id/play"
@@ -34,23 +40,18 @@
         android:layout_centerHorizontal="true"
         />
 
-    <Button
-        android:id="@+id/connect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/stop"
-        android:layout_marginTop="94dp"
-        android:text="UDP_Connect"
-        android:textSize="20sp" />
 
     <Button
         android:id="@+id/talk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/stop"
-        android:layout_marginTop="237dp"
-        android:text="UDP_Talk"
+        android:layout_marginTop="163dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/colorPrimary"
         android:onClick="startMic"
+        android:text="UDP_Talk"
+        android:layout_centerHorizontal="true"
         android:textSize="20sp" />
 
     <Button
@@ -58,7 +59,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/stop"
-        android:layout_marginTop="162dp"
+        android:layout_marginTop="109dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="4dp"
+        android:background="@color/colorPrimary"
         android:onClick="startSpeakers"
         android:text="UDP_Listen"
         android:textSize="20sp" />

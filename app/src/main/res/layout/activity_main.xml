@@ -11,13 +11,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="RPS"
-        android:id="@+id/rps_start_btn"/>
+        android:id="@+id/buttonRPS"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Chat"
-        android:id="@+id/chat_start_btn"/>
+        android:id="@+id/buttonUDP"/>
 
 
 </LinearLayout>

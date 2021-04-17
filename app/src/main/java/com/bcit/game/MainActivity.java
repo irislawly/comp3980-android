@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Button goToRPS = (Button) findViewById(R.id.rps_start_btn);
+        final Button goToRPS = (Button) findViewById(R.id.buttonRPS);
         goToRPS.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -25,11 +25,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button goToChat = (Button) findViewById(R.id.chat_start_btn);
-        goToChat.setOnClickListener(new OnClickListener() {
+        final Button goToUDP = (Button) findViewById(R.id.buttonUDP);
+        goToUDP.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), Client.class);
+                Intent i = new Intent(getApplicationContext(), UDP.class);
                 startActivity(i);
             }
         });

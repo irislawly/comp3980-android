@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.media.AudioManager;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,8 +27,9 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 import static com.bcit.game.shared.*;
+//immediately  connect and talk or listen onced clicked.
 
-public class Client extends AppCompatActivity {
+public class UDP extends AppCompatActivity {
     private static final String LOG_TAG = "UDPDebug";
     private Button play, stop, record, speakUDP, listenUDP;
     private MediaRecorder myAudioRecorder;
@@ -37,10 +37,14 @@ public class Client extends AppCompatActivity {
     private boolean mic;
     private boolean speakers;
     private InetAddress address;
+    private  byte[] opponent_uid = {0,0,0,5};
+    private  byte[] user_uid = {0,0,0,4};
+    private long    current_order;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_client);
+        setContentView(R.layout.activity_udp);
 
         play = (Button) findViewById(R.id.play);
         stop = (Button) findViewById(R.id.stop);
@@ -78,7 +82,8 @@ public class Client extends AppCompatActivity {
                 } catch (IOException ioe) {
                     // make something
                 }
-
+                record.setEnabled(false);
+                stop.setEnabled(true);
                 Toast.makeText(getApplicationContext(), "Start record", Toast.LENGTH_SHORT).show();
             }
         });
@@ -96,7 +101,9 @@ public class Client extends AppCompatActivity {
                         System.out.println("Can't stop recording");
                     }
                 }
-
+                record.setEnabled(true);
+                stop.setEnabled(false);
+                play.setEnabled(true);
                 Toast.makeText(getApplicationContext(), "Stopped", Toast.LENGTH_SHORT).show();
             }
         });
@@ -111,18 +118,16 @@ public class Client extends AppCompatActivity {
                     mediaPlayer.start();
                     Toast.makeText(getApplicationContext(), "Playback", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
-                    // make something
+
                 }
             }
         });
     }
 
 
-    public void speak(){
+    public void speak(View v){
         Toast.makeText(getApplicationContext(), "Speak!", Toast.LENGTH_SHORT).show();
     }
-
-
 
 
     private void checkWritePermission() {
@@ -152,15 +157,16 @@ public class Client extends AppCompatActivity {
         }
     }
 
+    /**
+     * Problems: Cannot find the UID that we wanted to get from the TCP's select mode, but if it
+     * did show the uid we would do this.
+     * @param v
+     */
     public void startMic(View v) {
-
-
 
         // Creates the thread for capturing and transmitting audio
         mic = true;
         Thread thread = new Thread(new Runnable() {
-
-
 
             @Override
             public void run( ) {
@@ -170,75 +176,51 @@ public class Client extends AppCompatActivity {
                 AudioRecord audioRecorder = new AudioRecord (MediaRecorder.AudioSource.VOICE_COMMUNICATION, SAMPLE_RATE,
                         AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
                         AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)*10);
-
                 int bytes_read = 0;
                 int bytes_sent = 0;
 
-                // UDP packet size
-                ByteBuffer buffer = ByteBuffer.allocateDirect(PACKET_SIZE);
-                // The array holds the voice message
-                byte[] voice_buf;
 
+                byte[] voice_buf;
                 // <ordering>
                 long current_ordering = 0;
 
-
                 try {
-
-                    try {
-                        //      Get IP:
-                   //     EditText ipTextField = (EditText)findViewById(R.id.server_ip);
-                   //     c_server_address = InetAddress.getByName(ipTextField.getText().toString());
-
-                        //      Get PORT:
-                   //     EditText portTextField = (EditText)findViewById(R.id.server_port);
-                   //     port = Integer.parseInt(portTextField.getText().toString());
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
                     // Create a socket and start recording
-                    DatagramSocket UdpSocket = new DatagramSocket();
                     audioRecorder.startRecording();
 
-                    // currently recording, enter the send packet loop
+                    DatagramSocket socket = new DatagramSocket(PORT);
+
+                    // ORDERING [4 BYTE] UID[4] VOICE[5000]
+                    byte[] sending_packet = new byte[PACKET_SIZE];
+                    byte[] buf = new byte[VOICE_BUF_SIZE];; //Size 5000B
+
                     while(mic) {
+                        //capture audio
+                        bytes_read = audioRecorder.read(buf, 0, VOICE_BUF_SIZE);
 
-//                      Clear previous buffer
-                        buffer.clear();
+                        //put ordering into sending packet
+                        //make long current order into byte format
+                        byte[] order = new byte[ORDERING_SIZE];
 
-                        voice_buf = new byte[BUF_SIZE];
-                        bytes_read = audioRecorder.read(voice_buf, 0, BUF_SIZE);
-                        Log.i(LOG_TAG, "bytes_read: " + bytes_read);
+                        for(int i = 0; i < ORDERING_SIZE; i++) {
+                            sending_packet[i] = order[i];
+                        }
 
-                        /**             32 32    64 -> (int) <some long number>
-                         *              16 16      32 -> (short) <some int number></some>
-                         * { ordering : uint32, (long, 0 ~ 4294967295)
-                         *   uid      : uint32 (long, 0 ~ 4294967295)
-                         *   port     : uint16 (int, 0 ~ 65535)
-                         * */
+                        //put UID into sending packet
+                        for(int i = ORDERING_SIZE; i < (ORDERING_SIZE+UID_SIZE) ; i++){
+                            sending_packet[i] = user_uid[i];
+                        }
 
-                        ///???? UID is 32...where to get?
-                        buffer.putInt((int)current_ordering++).putInt((int)0005);
-//                                .putShort((short)port);
-                        buffer.put(voice_buf);
-                        buffer.rewind();
-//                                                        0 ~  end of buffer
-                        byte[] struct_to_send = new byte[buffer.remaining()];
+                        //put audio buff into sending packet
+                        for(int i =(ORDERING_SIZE+UID_SIZE-1) ; i < PACKET_SIZE; i++ ){
+                            sending_packet[i] = user_uid[i];
+                        }
 
-                        buffer.get(struct_to_send);
+                        DatagramPacket packet = new DatagramPacket(sending_packet, PACKET_SIZE, address, PORT);
+                        //send packet to server
+                        socket.send(packet);
 
-                        System.out.println("Msg sent:");
-                        System.out.println(Arrays.toString(struct_to_send));
-                        System.out.println(Arrays.toString(voice_buf));
-
-//                      THE SECOND PARAM HAS TO BE THE SAME LENGTH AS THE payload
-                        DatagramPacket packet = new DatagramPacket(struct_to_send,  struct_to_send.length, address, 8080);
-                        UdpSocket.send(packet);
-
-
-                        Log.i(LOG_TAG, "Packet destination: " + address.toString());
+                        Log.i(LOG_TAG, "Audio bytes sent: " + bytes_read);
                         Thread.sleep(SAMPLE_INTERVAL, 0);
 
                     }
@@ -246,10 +228,8 @@ public class Client extends AppCompatActivity {
                     // Stop recording and release resources
                     audioRecorder.stop();
                     audioRecorder.release();
-
-                    UdpSocket.disconnect();
-                    UdpSocket.close();
-
+                    socket.disconnect();
+                    socket.close();
                     mic = false;
                     return;
                 }
@@ -279,7 +259,6 @@ public class Client extends AppCompatActivity {
     }
 
     public void startSpeakers(View v) {
-        long ordering;
 
         // Creates the thread for receiving and playing back audio
         if(speakers) {
@@ -292,40 +271,54 @@ public class Client extends AppCompatActivity {
                     // Create an instance of AudioTrack, used for playing back audio
                     Log.i(LOG_TAG, "Receive thread started. Thread id: " + Thread.currentThread().getId());
                     AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
-                            AudioFormat.ENCODING_PCM_16BIT, BUF_SIZE, AudioTrack.MODE_STREAM);
+                            AudioFormat.ENCODING_PCM_16BIT, VOICE_BUF_SIZE, AudioTrack.MODE_STREAM);
                     track.play();
 
                     try {
 
                         // Define a socket to receive the audio
-                        DatagramSocket socket = new DatagramSocket(8080);
-
-                        byte[] received_struct = new byte[PACKET_SIZE] ;
-                        byte[] buf;
-
-                        long received_ordering ;
-//                        if(received_ordering < ordering){
-//
-//                        }
-//                        else{
-//
-//                        }
-//                        ordering++;
+                        DatagramSocket socket = new DatagramSocket(PORT);
+                        // ORDERING [4 BYTE] UID[4] VOICE[5000]
+                        byte[] received_packet = new byte[PACKET_SIZE];
+                        byte[] bufAudio;
+                        byte[] ordering;
+                        byte[] received_uid;
 
 
                         while(speakers) {
 
-                            // Play back the audio received from packets
-                            DatagramPacket packet = new DatagramPacket(received_struct, PACKET_SIZE);
+                            // Play back the audio part of the PACKET (5000 bytes, from index 7 to end)
+                            DatagramPacket packet = new DatagramPacket(received_packet, PACKET_SIZE);
                             socket.receive(packet);
 
-                            buf =  Arrays.copyOfRange(received_struct, 10, PACKET_SIZE);
+                            //Get the ordering of the recieving
+                            ordering = Arrays.copyOfRange(received_packet, 0, ORDERING_SIZE-1);
+                            //Get the uid of the receieving
+                            received_uid =  Arrays.copyOfRange(received_packet, ORDERING_SIZE-1, UID_SIZE-1);
 
-//                            Log.i(LOG_TAG, "Packet received: " + packet.getLength());
-//                            track.write(packet.getData(), 0, BUF_SIZE);
+                            long received_ordering = ByteBuffer.wrap(ordering).getInt();
+
+
+                            //Check that the UID retrieved is the other opponent's UID.
+
+                            if(  Arrays.equals(received_uid ,opponent_uid)){
+                                Log.i(LOG_TAG, "Wrong uid recieved!");
+                            }
+
+                            //if order of packets lower than the current ordering packet
+                            if(received_ordering < current_order){
+                                //disconnect
+                                Log.i(LOG_TAG, "Wrong  order recieved!");
+                            }
+                            current_order++;
+
+                            //filter the packet into audio packet
+                            bufAudio =  Arrays.copyOfRange(received_packet, (ORDERING_SIZE+UID_SIZE-1), PACKET_SIZE);
                             Log.i(LOG_TAG, "Packet received: " + Arrays.toString(packet.getData()));
-                            track.write(buf, 0,BUF_SIZE);
+                            //start playing audio
+                            track.write(bufAudio, SAMPLE_RATE, VOICE_BUF_SIZE);
                         }
+
                         // Stop playing back and release resources
                         socket.disconnect();
                         socket.close();

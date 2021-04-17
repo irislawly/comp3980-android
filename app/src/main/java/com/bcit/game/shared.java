@@ -4,8 +4,9 @@ import android.media.AudioFormat;
 
 public @interface shared {
 
-   static final int PORT = 8080;
-   static String SERVER = "23.16.22.78";
+   static final int PORT = 2034;
+   static String SERVER = "192.168.1.89" ;// Iris' ipp adress
+  // static String SERVER = "23.16.22.78";
    //for clent request
    static final int  UID_1 =0;
     static final int  UID_2 =1;
@@ -105,13 +106,17 @@ static final int V1=1;
 */
 
 //Protocol VOICE
-public static final int     SAMPLE_RATE     = 10000;                         //samples/second
-    public static final int     CHANNELS        = 1;                             //mono
-    public static final int     BIT_DEPTH       = AudioFormat.ENCODING_PCM_16BIT;//bits, I think
-    public static final double  TIME_FRAME      = 0.5;                           //seconds
+public static final int     SAMPLE_RATE     = 10000;
+    public static final int     CHANNELS        = 1;
+    public static final int     BIT_DEPTH       = AudioFormat.ENCODING_PCM_16BIT;
+    public static final double  TIME_FRAME      = 0.5;
     public static final int     BUFFER_FACTOR   = 10;
     public static final int     SAMPLE_SIZE     = 2;
-    public static final int     SAMPLE_INTERVAL = 20;                            //units??
-    public static final int     BUF_SIZE        = SAMPLE_INTERVAL * SAMPLE_INTERVAL * SAMPLE_SIZE * 2;
-    public static final int PACKET_SIZE = 70;
+    public static final int     SAMPLE_INTERVAL = 20;
+    int UID_SIZE = 4;
+    int ORDERING_SIZE = 4;
+    int VOICE_BUF_SIZE = 5000;
+    public static final int PACKET_SIZE = 5008;
+        //voice buf size is PAYLOAD .
+
 }

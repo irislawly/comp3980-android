@@ -1,33 +1,19 @@
 package com.bcit.game;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.bcit.game.R;
 
 import static com.bcit.game.shared.*;
 
@@ -44,8 +30,8 @@ public class RPS extends Activity implements View.OnClickListener {
 
     private Socket socket;
 
-    private static final int SERVER_PORT = 8080;
-    private static final String SERVER_IP = "23.16.22.78";
+    private static final int SERVER_PORT = 2034;
+    private static final String SERVER_IP = "192.168.1.89";
     int count = 0, game_id, bytes_sent;
     boolean connected = false, close_conn = false;
     byte[] uid = new byte[4];
@@ -69,13 +55,38 @@ public class RPS extends Activity implements View.OnClickListener {
         Button button_paper = findViewById(R.id.button_paper);
         Button button_scissor = findViewById(R.id.button_scissor);
 
-
         button_rock.setOnClickListener(this);
         button_paper.setOnClickListener(this);
         button_scissor.setOnClickListener(this);
 
+        Button button_udp = findViewById(R.id.button_udp);
+        Button button_dc = findViewById(R.id.button_dc);
+
     }
 
+    public void disconnect(View v){
+        Toast.makeText(RPS.this, "Bye.", Toast.LENGTH_SHORT).show();
+        try {
+            //onclick condition
+            clientThread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        clientThread.stop();
+    }
+
+
+    public void udp(View v){
+        Toast.makeText(RPS.this, "Udp", Toast.LENGTH_SHORT).show();
+        String u  ="";
+        for (int i = 0; i < uid.length; i++) {
+            u += String.valueOf(uid[i]);
+        }
+        Log.w("Debug", "uid: " +u);
+        UDP udp = new UDP();
+        //send the udp to the client
+        udp.startMic(v);
+    }
 
     public void onClick(View v) {
         int choice = 0;
@@ -100,6 +111,8 @@ public class RPS extends Activity implements View.OnClickListener {
         clientThread.start();
         Toast.makeText(RPS.this, "Picked: " + choice, Toast.LENGTH_SHORT).show();
     }
+
+
 
 
     class ClientThread implements Runnable {
@@ -153,30 +166,10 @@ public class RPS extends Activity implements View.OnClickListener {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    //try to recieve the RES uid shiet
-              /*      try {
-                        InputStream stream = socket.getInputStream();
-
-                        stream.read(res);
-                        String rez = "";
-                        String uID = "";
-                        for (int i = 0; i < res.length; i++) {
-                            rez += String.valueOf(res[i]);
-                        }
-                        for (int i = 3; i < 7; i++) {
-                            uID += String.valueOf(res[i]);
-                        }
-                        Log.w("Debug", "Ur res: " + rez);
-                        Log.w("Debug", "Ur uid: " + uID);*
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }*/
-
 
                     connected = true;
 
                 } else {
-                    Log.w("Debug", "Else!");
                     try {
                         InputStream stream = socket.getInputStream();
                         stream.read(res);
@@ -190,7 +183,6 @@ public class RPS extends Activity implements View.OnClickListener {
                         rez += String.valueOf(res[i]);
                     }
 
-                    Log.w("Debug", "Else res: " + rez);
                     choice[0] = 0;
                     choice[1] = 0;
 
@@ -254,12 +246,7 @@ public class RPS extends Activity implements View.OnClickListener {
                                                     t.setText("You win!\nThank You for playing BIT Arcade's Rock Paper Scissors");
                                                 }
                                             });
-                                            try {
-                                                clientThread.sleep(5000);
-                                            } catch (InterruptedException e) {
-                                                e.printStackTrace();
-                                            }
-                                            clientThread.stop();
+
                                             break;
                                         case LOSS:
                                             count++;
@@ -272,12 +259,8 @@ public class RPS extends Activity implements View.OnClickListener {
 
                                                 }
                                             });
-                                            try {
-                                                clientThread.sleep(5000);
-                                            } catch (InterruptedException e) {
-                                                e.printStackTrace();
-                                            }
-                                            clientThread.stop();
+
+
                                             break;
                                         case TIE:
                                             handler.post(new Runnable() {
@@ -287,12 +270,7 @@ public class RPS extends Activity implements View.OnClickListener {
                                                     t.setText("You tie!\nThank You for playing BIT Arcade's Rock Paper Scissors");
                                                 }
                                             });
-                                            try {
-                                                clientThread.sleep(5000);
-                                            } catch (InterruptedException e) {
-                                                e.printStackTrace();
-                                            }
-                                            clientThread.stop();
+
                                             break;
                                         case OPPONENT_DISCONNECTED:
                                             handler.post(new Runnable() {
@@ -302,7 +280,9 @@ public class RPS extends Activity implements View.OnClickListener {
                                                     t.setText("Your opponent has disconnected!\nThe game will end shortly");
                                                 }
                                             });
+
                                             try {
+                                                //onclick condition
                                                 clientThread.sleep(5000);
                                             } catch (InterruptedException e) {
                                                 e.printStackTrace();
