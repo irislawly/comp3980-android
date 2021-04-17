@@ -1,4 +1,4 @@
-# comp3980-android
+# COMP3980 Assignment 3 Mobile Version (Android)
 
 ### !!! Note:
 1. Error checking on mobile client seems to un-needed since clients are provided with exactly three choices (buttons) where it is impossible for clients to enter a wrong value.
