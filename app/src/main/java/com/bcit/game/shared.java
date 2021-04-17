@@ -5,8 +5,8 @@ import android.media.AudioFormat;
 public @interface shared {
 
    static final int PORT = 2034;
-   static String SERVER = "192.168.1.89" ;// Iris' ipp adress
-  // static String SERVER = "23.16.22.78";
+
+   static String SERVER = "23.16.22.78"; // tiffany ipaddress
    //for clent request
    static final int  UID_1 =0;
     static final int  UID_2 =1;
@@ -117,6 +117,6 @@ public static final int     SAMPLE_RATE     = 10000;
     int ORDERING_SIZE = 4;
     int VOICE_BUF_SIZE = 5000;
     public static final int PACKET_SIZE = 5008;
-        //voice buf size is PAYLOAD .
+
 
 }

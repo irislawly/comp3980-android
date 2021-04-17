@@ -30,8 +30,8 @@ public class RPS extends Activity implements View.OnClickListener {
 
     private Socket socket;
 
-    private static final int SERVER_PORT = 2034;
-    private static final String SERVER_IP = "192.168.1.89";
+    private static final int SERVER_PORT = PORT;
+    private static final String SERVER_IP = SERVER;
     int count = 0, game_id, bytes_sent;
     boolean connected = false, close_conn = false;
     byte[] uid = new byte[4];
