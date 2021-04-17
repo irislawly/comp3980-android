@@ -1,8 +1,11 @@
 package com.bcit.game;
 
+import android.media.AudioFormat;
+
 public @interface shared {
 
    static final int PORT = 8080;
+   static String SERVER = "23.16.22.78";
    //for clent request
    static final int  UID_1 =0;
     static final int  UID_2 =1;
@@ -100,4 +103,15 @@ static final int START_GAME=1;           // MsgType::= UPDATE, Payload::= Team
 static final int V1=1;
 
 */
+
+//Protocol VOICE
+public static final int     SAMPLE_RATE     = 10000;                         //samples/second
+    public static final int     CHANNELS        = 1;                             //mono
+    public static final int     BIT_DEPTH       = AudioFormat.ENCODING_PCM_16BIT;//bits, I think
+    public static final double  TIME_FRAME      = 0.5;                           //seconds
+    public static final int     BUFFER_FACTOR   = 10;
+    public static final int     SAMPLE_SIZE     = 2;
+    public static final int     SAMPLE_INTERVAL = 20;                            //units??
+    public static final int     BUF_SIZE        = SAMPLE_INTERVAL * SAMPLE_INTERVAL * SAMPLE_SIZE * 2;
+    public static final int PACKET_SIZE = 70;
 }

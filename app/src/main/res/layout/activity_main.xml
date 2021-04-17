@@ -1,80 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#27A5A5A5"
-    tools:context=".MainActivity">
-
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="128dp"
-        android:text="Rock-Paper-Scissor"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="32dp"
-            android:text="Choose one out of the\n ROCK-PAPER-SCISSOR\nfrom below"
-            android:textAlignment="center"
-            android:textColor="#000"
-            android:textSize="18sp" />
-
-        <Button
-            android:id="@+id/button_rock"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@color/colorPrimaryDark"
-            android:text="Rock"
-            android:textColor="#fff" />
-
-        <Button
-            android:id="@+id/button_paper"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@color/colorPrimary"
-            android:text="Paper"
-            android:textColor="#fff" />
-
-        <Button
-            android:id="@+id/button_scissor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimaryDark"
-            android:text="scissor"
-            android:textColor="#fff" />
-    </LinearLayout>
+    tools:context=".MainActivity"
+    android:orientation="vertical"
+    android:gravity="center">
 
     <Button
-        android:id="@+id/button_udp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="To udp page"
-        tools:layout_editor_absoluteX="158dp"
-        tools:layout_editor_absoluteY="33dp" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="RPS"
+        android:id="@+id/rps_start_btn"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chat"
+        android:id="@+id/chat_start_btn"/>
+
+
+</LinearLayout>
