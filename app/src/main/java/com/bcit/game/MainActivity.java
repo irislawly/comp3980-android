@@ -89,6 +89,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.button_scissor:
                 choice = SCISSORS;
                 break;
+
+            case R.id.udpButton:
+                choice = ROCK;
+                break;
         }
         clientChoice = new ClientThread(choice);
         clientThread = new Thread(clientChoice);

@@ -69,4 +69,12 @@
             android:text="scissor"
             android:textColor="#fff" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/button_udp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="To udp page"
+        tools:layout_editor_absoluteX="158dp"
+        tools:layout_editor_absoluteY="33dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
