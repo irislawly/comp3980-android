@@ -42,7 +42,7 @@ public class RPS extends Activity implements View.OnClickListener {
     byte choice[] = new byte[2];
     byte[] res = new byte[8];
     boolean accepted = false;
-    //private Button button = (Button) findViewById(R.id.btn_send);
+
     Thread clientThread;
     ClientThread clientChoice;
 
@@ -59,8 +59,6 @@ public class RPS extends Activity implements View.OnClickListener {
         button_paper.setOnClickListener(this);
         button_scissor.setOnClickListener(this);
 
-        Button button_udp = findViewById(R.id.button_udp);
-        Button button_dc = findViewById(R.id.button_dc);
 
     }
 
@@ -246,7 +244,13 @@ public class RPS extends Activity implements View.OnClickListener {
                                                     t.setText("You win!\nThank You for playing BIT Arcade's Rock Paper Scissors");
                                                 }
                                             });
-
+                                            try {
+                                                //onclick condition
+                                                clientThread.sleep(5000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
+                                            clientThread.stop();
                                             break;
                                         case LOSS:
                                             count++;
@@ -260,7 +264,13 @@ public class RPS extends Activity implements View.OnClickListener {
                                                 }
                                             });
 
-
+                                            try {
+                                                //onclick condition
+                                                clientThread.sleep(5000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
+                                            clientThread.stop();
                                             break;
                                         case TIE:
                                             handler.post(new Runnable() {
@@ -270,7 +280,13 @@ public class RPS extends Activity implements View.OnClickListener {
                                                     t.setText("You tie!\nThank You for playing BIT Arcade's Rock Paper Scissors");
                                                 }
                                             });
-
+                                            try {
+                                                //onclick condition
+                                                clientThread.sleep(5000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
+                                            clientThread.stop();
                                             break;
                                         case OPPONENT_DISCONNECTED:
                                             handler.post(new Runnable() {

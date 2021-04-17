@@ -8,10 +8,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:background="@color/colorPrimary"
+
         android:text="Test voice"
         android:textSize="20sp"
         android:id="@+id/record"
+        android:onClick="record"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="15dp"
         />
@@ -19,10 +20,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:background="@color/colorPrimary"
+
         android:text="Stop"
         android:textSize="20sp"
         android:id="@+id/stop"
+        android:onClick="stop"
         android:layout_below="@id/record"
         android:layout_marginTop="10dp"
         android:layout_centerHorizontal="true"
@@ -31,9 +33,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:background="@color/colorPrimary"
+
         android:text="Playback"
         android:textSize="20sp"
+        android:onClick="play"
         android:id="@+id/play"
         android:layout_below="@id/stop"
         android:layout_marginTop="10dp"
@@ -48,7 +51,7 @@
         android:layout_below="@id/stop"
         android:layout_marginTop="163dp"
         android:layout_marginBottom="4dp"
-        android:background="@color/colorPrimary"
+
         android:onClick="startMic"
         android:text="UDP_Talk"
         android:layout_centerHorizontal="true"
@@ -62,8 +65,9 @@
         android:layout_marginTop="109dp"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="4dp"
-        android:background="@color/colorPrimary"
+
         android:onClick="startSpeakers"
         android:text="UDP_Listen"
         android:textSize="20sp" />
+
 </RelativeLayout>

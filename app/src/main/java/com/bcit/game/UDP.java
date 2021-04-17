@@ -27,11 +27,15 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 import static com.bcit.game.shared.*;
-//immediately  connect and talk or listen onced clicked.
 
+
+/**
+ * UDP Code, sending bytes of datagrams, however UDP server unable to connect and keep track of the UID
+ * of the player.
+ */
 public class UDP extends AppCompatActivity {
     private static final String LOG_TAG = "UDPDebug";
-    private Button play, stop, record, speakUDP, listenUDP;
+    private Button play, stop, record;
     private MediaRecorder myAudioRecorder;
     private String outputFile;
     private boolean mic;
@@ -49,8 +53,6 @@ public class UDP extends AppCompatActivity {
         play = (Button) findViewById(R.id.play);
         stop = (Button) findViewById(R.id.stop);
         record = (Button) findViewById(R.id.record);
-        speakUDP = (Button) findViewById(R.id.talk);
-        listenUDP = (Button) findViewById(R.id.listen);
 
         stop.setEnabled(false);
         play.setEnabled(false);
@@ -71,95 +73,11 @@ public class UDP extends AppCompatActivity {
         checkReadPermission();
         checkRecordingPermission();
 
-        record.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    myAudioRecorder.prepare();
-                    myAudioRecorder.start();
-                } catch (IllegalStateException ise) {
-                    System.out.println(ise.getMessage());
-                } catch (IOException ioe) {
-                    // make something
-                }
-                record.setEnabled(false);
-                stop.setEnabled(true);
-                Toast.makeText(getApplicationContext(), "Start record", Toast.LENGTH_SHORT).show();
-            }
-        });
 
-        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (myAudioRecorder != null) {
-                    try {
-                        myAudioRecorder.stop();
-                        myAudioRecorder.release();
-                        myAudioRecorder = null;
-                    } catch (IllegalStateException ise) {
-                        System.out.println("Can't stop recording");
-                    }
-                }
-                record.setEnabled(true);
-                stop.setEnabled(false);
-                play.setEnabled(true);
-                Toast.makeText(getApplicationContext(), "Stopped", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        play.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MediaPlayer mediaPlayer = new MediaPlayer();
-                try {
-                    mediaPlayer.setDataSource(outputFile);
-                    mediaPlayer.prepare();
-                    mediaPlayer.start();
-                    Toast.makeText(getApplicationContext(), "Playback", Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-
-                }
-            }
-        });
-    }
-
-
-    public void speak(View v){
-        Toast.makeText(getApplicationContext(), "Speak!", Toast.LENGTH_SHORT).show();
-    }
-
-
-    private void checkWritePermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    123);
-        }
-    }
-
-    private void checkReadPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    123);
-        }
-    }
-
-    private void checkRecordingPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
-                    123);
-        }
     }
 
     /**
-     * Problems: Cannot find the UID that we wanted to get from the TCP's select mode, but if it
-     * did show the uid we would do this.
+     * Problems: Wassn't able to connect to a UID using UDP,  therefore connection unable to be formed
      * @param v
      */
     public void startMic(View v) {
@@ -177,12 +95,6 @@ public class UDP extends AppCompatActivity {
                         AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
                         AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)*10);
                 int bytes_read = 0;
-                int bytes_sent = 0;
-
-
-                byte[] voice_buf;
-                // <ordering>
-                long current_ordering = 0;
 
                 try {
                     // Create a socket and start recording
@@ -199,23 +111,21 @@ public class UDP extends AppCompatActivity {
                         bytes_read = audioRecorder.read(buf, 0, VOICE_BUF_SIZE);
 
                         //put ordering into sending packet
-                        //make long current order into byte format
+                        //CONVERT long current order into byte format [undone]!!!
+
                         byte[] order = new byte[ORDERING_SIZE];
 
-                        for(int i = 0; i < ORDERING_SIZE; i++) {
-                            sending_packet[i] = order[i];
-                        }
 
-                        //put UID into sending packet
-                        for(int i = ORDERING_SIZE; i < (ORDERING_SIZE+UID_SIZE) ; i++){
-                            sending_packet[i] = user_uid[i];
-                        }
+                        //add header of UI and ordering = 8 bytes
+                        byte[] header = new byte[ORDERING_SIZE + UID_SIZE];
+                        System.arraycopy(order, 0, header , 0, ORDERING_SIZE);
+                        System.arraycopy(user_uid, 0, header, ORDERING_SIZE, UID_SIZE);
 
-                        //put audio buff into sending packet
-                        for(int i =(ORDERING_SIZE+UID_SIZE-1) ; i < PACKET_SIZE; i++ ){
-                            sending_packet[i] = user_uid[i];
-                        }
+                        //put header and voice packet together = 5008
+                        System.arraycopy(header, 0, sending_packet , 0, header.length);
+                        System.arraycopy(buf, 0, sending_packet, header.length, VOICE_BUF_SIZE);
 
+                        //now create a packet of the buffer to prepare
                         DatagramPacket packet = new DatagramPacket(sending_packet, PACKET_SIZE, address, PORT);
                         //send packet to server
                         socket.send(packet);
@@ -224,7 +134,8 @@ public class UDP extends AppCompatActivity {
                         Thread.sleep(SAMPLE_INTERVAL, 0);
 
                     }
-
+                    //incrment order after successfully sent out to server
+                    current_order++;
                     // Stop recording and release resources
                     audioRecorder.stop();
                     audioRecorder.release();
@@ -341,6 +252,76 @@ public class UDP extends AppCompatActivity {
                 }
             });
             receiveThread.start();
+        }
+    }
+    //code to test recording audio
+    public void record(View v){
+        try {
+            myAudioRecorder.prepare();
+            myAudioRecorder.start();
+        } catch (IllegalStateException ise) {
+            System.out.println(ise.getMessage());
+        } catch (IOException ioe) {
+            // make something
+        }
+        record.setEnabled(false);
+        stop.setEnabled(true);
+        Toast.makeText(getApplicationContext(), "Testing record", Toast.LENGTH_SHORT).show();
+    }
+    //code to stop testing audio
+    public void stop(View v){
+        if (myAudioRecorder != null) {
+            try {
+                myAudioRecorder.stop();
+                myAudioRecorder.release();
+                myAudioRecorder = null;
+            } catch (IllegalStateException ise) {
+                System.out.println("Can't stop recording");
+            }
+        }
+        record.setEnabled(true);
+        stop.setEnabled(false);
+        play.setEnabled(true);
+        Toast.makeText(getApplicationContext(), "Stopped", Toast.LENGTH_SHORT).show();
+    }
+    //code to test replaying audio
+    public void play(View v){
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(outputFile);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            Toast.makeText(getApplicationContext(), "Playback", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+
+        }
+    }
+
+    //Checking for permissions
+    private void checkWritePermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    123);
+        }
+    }
+
+    private void checkReadPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    123);
+        }
+    }
+
+    private void checkRecordingPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
+                    123);
         }
     }
 
